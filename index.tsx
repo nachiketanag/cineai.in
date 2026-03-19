@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -21,8 +21,27 @@ import {
   MessageCircle,
   Share2,
   Award,
-  TrendingUp
+  TrendingUp,
+  LayoutDashboard,
+  LogOut,
+  BookOpen,
+  Trophy,
+  Clock,
+  ChevronRight,
+  Lock
 } from 'lucide-react';
+import { Course, User } from './types';
+import { COURSES, DUMMY_USER } from './constants';
+import { CoursesPage } from './CoursesPage';
+import { FreeResourcesPage } from './FreeResourcesPage';
+import { CommunityPage } from './CommunityPage';
+import { PricingPage } from './PricingPage';
+import { AboutPage } from './AboutPage';
+import { StudentShowcasePage } from './StudentShowcasePage';
+import { CreatorStoriesPage } from './CreatorStoriesPage';
+import { HelpCenterPage } from './HelpCenterPage';
+import { PrivacyPolicyPage } from './PrivacyPolicyPage';
+import { TermsOfServicePage } from './TermsOfServicePage';
 
 // --- Animation Variants ---
 
@@ -75,8 +94,16 @@ const slideInRight = {
 
 // --- Components ---
 
-const Navbar = () => {
+const Navbar = ({ onNavigate, currentView, user, onLogout }: { onNavigate: (view: string) => void, currentView: string, user: User | null, onLogout: () => void }) => {
   const [isOpen, setIsOpen] = useState(false);
+
+  const navItems = [
+    { label: 'Courses', view: 'courses' },
+    { label: 'Free Resources', view: 'resources' },
+    { label: 'Community', view: 'community' },
+    { label: 'Pricing', view: 'pricing' },
+    { label: 'About', view: 'about' }
+  ];
 
   return (
     <motion.nav 
@@ -87,7 +114,7 @@ const Navbar = () => {
     >
       <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
         {/* Logo */}
-        <div className="flex items-center gap-2 cursor-pointer group">
+        <div className="flex items-center gap-2 cursor-pointer group" onClick={() => onNavigate('landing')}>
           <div className="w-8 h-8 bg-accent-lime rounded-lg flex items-center justify-center transform group-hover:rotate-12 transition-transform">
             <Play fill="#0B0B0C" className="w-4 h-4 text-cine-black" />
           </div>
@@ -96,16 +123,17 @@ const Navbar = () => {
 
         {/* Desktop Nav */}
         <div className="hidden md:flex items-center gap-8">
-          {['Courses', 'Free Resources', 'Community', 'Pricing', 'About'].map((item, i) => (
+          {navItems.map((item, i) => (
             <motion.a 
-              key={item} 
+              key={item.label} 
               href="#" 
+              onClick={(e) => { e.preventDefault(); onNavigate(item.view); }}
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 + (i * 0.1) }}
-              className="text-sm font-medium text-cine-textMuted hover:text-white transition-colors"
+              className={`text-sm font-medium transition-colors ${currentView === item.view ? 'text-accent-lime' : 'text-cine-textMuted hover:text-white'}`}
             >
-              {item}
+              {item.label}
             </motion.a>
           ))}
         </div>
@@ -117,10 +145,29 @@ const Navbar = () => {
           transition={{ delay: 0.6 }}
           className="hidden md:flex items-center gap-4"
         >
-          <a href="#" className="text-sm font-medium hover:text-white">Log in</a>
-          <button className="px-5 py-2.5 bg-accent-lime text-cine-black font-bold text-sm rounded-full hover:bg-white transition-colors">
-            Start Learning
-          </button>
+          {user ? (
+            <>
+              <button 
+                onClick={() => onNavigate('dashboard')}
+                className={`text-sm font-medium flex items-center gap-2 transition-colors ${currentView === 'dashboard' ? 'text-white' : 'text-accent-lime hover:text-white'}`}
+              >
+                <LayoutDashboard className="w-4 h-4" /> Dashboard
+              </button>
+              <button 
+                onClick={onLogout}
+                className="text-sm font-medium text-cine-textMuted hover:text-white transition-colors"
+              >
+                Log out
+              </button>
+            </>
+          ) : (
+            <>
+              <button onClick={() => onNavigate('login')} className="text-sm font-medium hover:text-white">Log in</button>
+              <button onClick={() => onNavigate('login')} className="px-5 py-2.5 bg-accent-lime text-cine-black font-bold text-sm rounded-full hover:bg-white transition-colors">
+                Start Learning
+              </button>
+            </>
+          )}
         </motion.div>
 
         {/* Mobile Toggle */}
@@ -139,15 +186,32 @@ const Navbar = () => {
             className="md:hidden bg-cine-surface border-b border-white/5 overflow-hidden"
           >
             <div className="px-6 py-8 flex flex-col gap-6">
-              {['Courses', 'Free Resources', 'Community', 'Pricing', 'About'].map((item) => (
-                <a key={item} href="#" className="text-lg font-medium text-white">
-                  {item}
+              {navItems.map((item) => (
+                <a 
+                  key={item.label} 
+                  href="#" 
+                  onClick={(e) => { e.preventDefault(); onNavigate(item.view); setIsOpen(false); }}
+                  className={`text-lg font-medium ${currentView === item.view ? 'text-accent-lime' : 'text-white'}`}
+                >
+                  {item.label}
                 </a>
               ))}
               <div className="h-px bg-white/10 w-full my-2"></div>
-              <button className="w-full py-3 bg-accent-lime text-cine-black font-bold rounded-lg">
-                Start Learning
-              </button>
+              {user ? (
+                <button 
+                  onClick={() => { onNavigate('dashboard'); setIsOpen(false); }}
+                  className="w-full py-3 bg-accent-lime text-cine-black font-bold rounded-lg"
+                >
+                  Go to Dashboard
+                </button>
+              ) : (
+                <button 
+                  onClick={() => { onNavigate('login'); setIsOpen(false); }}
+                  className="w-full py-3 bg-accent-lime text-cine-black font-bold rounded-lg"
+                >
+                  Start Learning
+                </button>
+              )}
             </div>
           </motion.div>
         )}
@@ -156,7 +220,430 @@ const Navbar = () => {
   );
 };
 
-const Hero = () => {
+// --- Auth & Dashboard Components ---
+
+const LoginPage = ({ onLogin }: { onLogin: (user: User) => void }) => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (email === DUMMY_USER.email && password === DUMMY_USER.password) {
+      onLogin(DUMMY_USER);
+    } else {
+      setError('Invalid credentials. Use test@cineai.in / password123');
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center px-6 bg-cine-black">
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="w-full max-w-md bg-cine-surface p-8 rounded-3xl border border-white/10 shadow-2xl"
+      >
+        <div className="text-center mb-8">
+          <div className="w-12 h-12 bg-accent-lime rounded-xl flex items-center justify-center mx-auto mb-4">
+            <Lock className="w-6 h-6 text-cine-black" />
+          </div>
+          <h2 className="font-display font-bold text-3xl mb-2">Welcome Back</h2>
+          <p className="text-cine-textMuted text-sm">Sign in to continue your filmmaking journey</p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-cine-textMuted mb-2">Email Address</label>
+            <input 
+              type="email" 
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="test@cineai.in"
+              className="w-full bg-cine-black border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-accent-lime transition-colors"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-cine-textMuted mb-2">Password</label>
+            <input 
+              type="password" 
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              className="w-full bg-cine-black border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-accent-lime transition-colors"
+              required
+            />
+          </div>
+
+          {error && <p className="text-accent-coral text-xs font-medium">{error}</p>}
+
+          <button 
+            type="submit"
+            className="w-full py-4 bg-accent-lime text-cine-black font-bold rounded-xl hover:bg-white transition-colors shadow-lg shadow-accent-lime/10"
+          >
+            Sign In
+          </button>
+        </form>
+
+        <div className="mt-8 pt-6 border-t border-white/5 text-center">
+          <p className="text-xs text-cine-textMuted">
+            Don't have an account? <a href="#" className="text-accent-lime font-bold">Join the Academy</a>
+          </p>
+        </div>
+      </motion.div>
+    </div>
+  );
+};
+
+const Dashboard = ({ user, onLogout }: { user: User, onLogout: () => void }) => {
+  const [activeCourse, setActiveCourse] = useState<Course | null>(null);
+  const [completedModules, setCompletedModules] = useState<string[]>(user.completedModules);
+  const [showCompletionAnim, setShowCompletionAnim] = useState(false);
+  const [currentTab, setCurrentTab] = useState<'overview' | 'community' | 'certificates'>('overview');
+
+  const handleModuleToggle = (moduleId: string, course: Course) => {
+    setCompletedModules(prev => {
+      const isNowCompleted = !prev.includes(moduleId);
+      const newCompleted = isNowCompleted 
+        ? [...prev, moduleId] 
+        : prev.filter(id => id !== moduleId);
+      
+      // Check if course is now fully completed
+      const courseModuleIds = course.modules.map(m => m.id);
+      const allCompleted = courseModuleIds.every(id => newCompleted.includes(id));
+      
+      if (allCompleted && isNowCompleted) {
+        setShowCompletionAnim(true);
+        setTimeout(() => setShowCompletionAnim(false), 5000);
+      }
+
+      return newCompleted;
+    });
+  };
+
+  const calculateProgress = (course: Course) => {
+    const courseModuleIds = course.modules.map(m => m.id);
+    const completedCount = courseModuleIds.filter(id => completedModules.includes(id)).length;
+    return Math.round((completedCount / courseModuleIds.length) * 100);
+  };
+
+  const tabs = [
+    { id: 'overview', icon: <LayoutDashboard className="w-5 h-5" />, label: "Overview" },
+    { id: 'community', icon: <Users className="w-5 h-5" />, label: "Community" },
+    { id: 'certificates', icon: <Award className="w-5 h-5" />, label: "Certificates" },
+  ];
+
+  return (
+    <div className="min-h-screen bg-cine-black flex">
+      {/* Completion Animation Overlay */}
+      <AnimatePresence>
+        {showCompletionAnim && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-cine-black/90 backdrop-blur-md"
+          >
+            <motion.div 
+              initial={{ scale: 0.5, rotate: -10 }}
+              animate={{ scale: 1, rotate: 0 }}
+              className="text-center"
+            >
+              <div className="w-32 h-32 bg-accent-lime rounded-full flex items-center justify-center mx-auto mb-8 shadow-[0_0_100px_rgba(204,255,0,0.5)]">
+                <Trophy className="w-16 h-16 text-cine-black" />
+              </div>
+              <h2 className="font-display font-bold text-5xl mb-4">Course Completed!</h2>
+              <p className="text-xl text-cine-textMuted">You're one step closer to AI mastery.</p>
+              
+              {/* Confetti simulation with motion */}
+              {[...Array(20)].map((_, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ x: 0, y: 0, opacity: 1 }}
+                  animate={{ 
+                    x: (Math.random() - 0.5) * 1000, 
+                    y: (Math.random() - 0.5) * 1000,
+                    opacity: 0,
+                    rotate: 360
+                  }}
+                  transition={{ duration: 2, ease: "easeOut" }}
+                  className="absolute top-1/2 left-1/2 w-3 h-3 rounded-full"
+                  style={{ backgroundColor: i % 2 === 0 ? '#CCFF00' : '#2D5BFF' }}
+                />
+              ))}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Sidebar */}
+      <aside className="w-20 md:w-64 border-r border-white/5 flex flex-col items-center md:items-start p-6 bg-cine-surface/30">
+        <div className="flex items-center gap-3 mb-12 cursor-pointer" onClick={() => { setActiveCourse(null); setCurrentTab('overview'); }}>
+          <div className="w-10 h-10 bg-accent-lime rounded-xl flex items-center justify-center shrink-0">
+            <Play fill="#0B0B0C" className="w-5 h-5 text-cine-black" />
+          </div>
+          <span className="font-display font-bold text-xl hidden md:block">CineAI</span>
+        </div>
+
+        <nav className="flex-grow w-full space-y-2">
+          {tabs.map((tab) => (
+            <button 
+              key={tab.id}
+              onClick={() => {
+                setCurrentTab(tab.id as any);
+                setActiveCourse(null);
+              }}
+              className={`w-full flex items-center gap-4 p-3 rounded-xl transition-colors ${currentTab === tab.id && !activeCourse ? 'bg-white/10 text-accent-lime' : 'text-cine-textMuted hover:bg-white/5 hover:text-white'}`}
+            >
+              {tab.icon}
+              <span className="font-medium hidden md:block">{tab.label}</span>
+            </button>
+          ))}
+          {activeCourse && (
+            <button 
+              className="w-full flex items-center gap-4 p-3 rounded-xl bg-white/10 text-accent-lime"
+            >
+              <BookOpen className="w-5 h-5" />
+              <span className="font-medium hidden md:block">Active Course</span>
+            </button>
+          )}
+        </nav>
+
+        <button 
+          onClick={onLogout}
+          className="w-full flex items-center gap-4 p-3 rounded-xl text-cine-textMuted hover:bg-accent-coral/10 hover:text-accent-coral transition-colors mt-auto"
+        >
+          <LogOut className="w-5 h-5" />
+          <span className="font-medium hidden md:block">Log out</span>
+        </button>
+      </aside>
+
+      {/* Main Content */}
+      <main className="flex-grow p-6 md:p-12 overflow-y-auto no-scrollbar">
+        <AnimatePresence mode="wait">
+          {activeCourse ? (
+            <motion.div 
+              key="player"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="max-w-6xl mx-auto"
+            >
+              <button 
+                onClick={() => setActiveCourse(null)}
+                className="flex items-center gap-2 text-cine-textMuted hover:text-white mb-8 transition-colors"
+              >
+                <ArrowRight className="w-4 h-4 rotate-180" /> Back to Dashboard
+              </button>
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                {/* Video Player Area */}
+                <div className="lg:col-span-2">
+                  <div className="aspect-video bg-black rounded-3xl overflow-hidden border border-white/10 shadow-2xl mb-8">
+                    <iframe 
+                      width="100%" 
+                      height="100%" 
+                      src={activeCourse.videoUrl} 
+                      title="Course Video" 
+                      frameBorder="0" 
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                      allowFullScreen
+                    ></iframe>
+                  </div>
+                  <h1 className="font-display font-bold text-3xl mb-4">{activeCourse.title}</h1>
+                  <p className="text-cine-textMuted leading-relaxed mb-8">
+                    {activeCourse.description}
+                  </p>
+                  
+                  <div className="flex items-center gap-6 p-6 bg-cine-surface rounded-2xl border border-white/5">
+                    <img src="https://randomuser.me/api/portraits/men/44.jpg" className="w-12 h-12 rounded-full" alt="Instructor" />
+                    <div>
+                      <p className="text-xs text-cine-textMuted uppercase font-bold tracking-widest">Instructor</p>
+                      <p className="font-bold text-lg">{activeCourse.instructor}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Curriculum Sidebar */}
+                <div className="lg:col-span-1">
+                  <div className="bg-cine-surface rounded-3xl border border-white/10 overflow-hidden">
+                    <div className="p-6 border-b border-white/5 bg-white/5">
+                      <h3 className="font-bold flex items-center gap-2">
+                        <Layers className="w-4 h-4 text-accent-lime" /> Curriculum
+                      </h3>
+                    </div>
+                    <div className="p-4 space-y-2">
+                      {activeCourse.modules.map((module, idx) => {
+                        const isCompleted = completedModules.includes(module.id);
+                        return (
+                          <button 
+                            key={module.id}
+                            onClick={() => handleModuleToggle(module.id, activeCourse)}
+                            className={`w-full flex items-center justify-between p-4 rounded-xl transition-all ${isCompleted ? 'bg-accent-lime/10 border border-accent-lime/20' : 'bg-white/5 border border-transparent hover:border-white/10'}`}
+                          >
+                            <div className="flex items-center gap-4">
+                              <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold ${isCompleted ? 'bg-accent-lime text-cine-black' : 'bg-white/10 text-cine-textMuted'}`}>
+                                {isCompleted ? <CheckCircle2 className="w-3 h-3" /> : idx + 1}
+                              </span>
+                              <span className={`text-sm font-medium ${isCompleted ? 'text-white' : 'text-cine-textMuted'}`}>{module.title}</span>
+                            </div>
+                            {isCompleted ? (
+                              <span className="text-[10px] font-bold text-accent-lime uppercase tracking-widest">Done</span>
+                            ) : (
+                              <Play className="w-3 h-3 text-cine-textMuted" />
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          ) : currentTab === 'overview' ? (
+            <motion.div 
+              key="overview"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+            >
+              <header className="mb-12">
+                <h1 className="font-display font-bold text-4xl mb-2">Hello, {user.name}</h1>
+                <p className="text-cine-textMuted">Continue where you left off today.</p>
+              </header>
+
+              {/* Stats Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                {[
+                  { label: "Courses Enrolled", value: user.enrolledCourses.length, icon: <BookOpen className="text-accent-blue" /> },
+                  { label: "Modules Completed", value: completedModules.length, icon: <CheckCircle2 className="text-accent-lime" /> },
+                  { label: "Learning Hours", value: "24.5", icon: <Clock className="text-accent-purple" /> },
+                ].map((stat, i) => (
+                  <div key={i} className="bg-cine-surface p-6 rounded-2xl border border-white/5">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="p-2 bg-white/5 rounded-lg">{stat.icon}</div>
+                    </div>
+                    <p className="text-cine-textMuted text-sm mb-1">{stat.label}</p>
+                    <p className="text-3xl font-display font-bold">{stat.value}</p>
+                  </div>
+                ))}
+              </div>
+
+              <h2 className="font-display font-bold text-2xl mb-6">Your Courses</h2>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {COURSES.filter(c => user.enrolledCourses.includes(c.id)).map((course) => {
+                  const progress = calculateProgress(course);
+                  return (
+                    <motion.div 
+                      key={course.id}
+                      whileHover={{ y: -5 }}
+                      onClick={() => setActiveCourse(course)}
+                      className="bg-cine-surface rounded-2xl overflow-hidden border border-white/5 cursor-pointer group"
+                    >
+                      <div className="flex h-40">
+                        <div className="w-1/3 shrink-0">
+                          <img src={course.image} className="w-full h-full object-cover" alt={course.title} />
+                        </div>
+                        <div className="p-6 flex flex-col justify-between flex-grow">
+                          <div>
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-accent-lime mb-1 block">{course.category}</span>
+                            <h3 className="font-bold text-lg leading-tight group-hover:text-accent-lime transition-colors">{course.title}</h3>
+                          </div>
+                          <div className="space-y-2">
+                            <div className="flex justify-between text-xs">
+                              <span className="text-cine-textMuted">Progress</span>
+                              <span className="text-white font-bold">{progress}%</span>
+                            </div>
+                            <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                              <motion.div 
+                                initial={{ width: 0 }}
+                                animate={{ width: `${progress}%` }}
+                                className="h-full bg-accent-lime"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            </motion.div>
+          ) : currentTab === 'community' ? (
+            <motion.div 
+              key="community"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="max-w-4xl"
+            >
+              <h1 className="font-display font-bold text-4xl mb-6">Community Feed</h1>
+              <p className="text-cine-textMuted mb-12 text-lg">Connect with fellow AI filmmakers and share your work.</p>
+              
+              <div className="space-y-6">
+                {[1, 2, 3].map(i => (
+                  <div key={i} className="bg-cine-surface p-6 rounded-2xl border border-white/5">
+                    <div className="flex items-center gap-4 mb-4">
+                      <div className="w-10 h-10 rounded-full bg-white/10" />
+                      <div>
+                        <p className="font-bold">Creator_{i}</p>
+                        <p className="text-xs text-cine-textMuted">2 hours ago</p>
+                      </div>
+                    </div>
+                    <p className="text-gray-300 mb-4">Just finished my first AI commercial using the workflows from Course 1! The results are mind-blowing.</p>
+                    <div className="aspect-video bg-white/5 rounded-xl mb-4 flex items-center justify-center">
+                      <Play className="w-12 h-12 text-white/20" />
+                    </div>
+                    <div className="flex items-center gap-6">
+                      <button className="flex items-center gap-2 text-sm text-cine-textMuted hover:text-accent-lime transition-colors">
+                        <Star className="w-4 h-4" /> 24 Likes
+                      </button>
+                      <button className="flex items-center gap-2 text-sm text-cine-textMuted hover:text-accent-lime transition-colors">
+                        <MessageCircle className="w-4 h-4" /> 8 Comments
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div 
+              key="certificates"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="max-w-4xl"
+            >
+              <h1 className="font-display font-bold text-4xl mb-6">Your Certificates</h1>
+              <p className="text-cine-textMuted mb-12 text-lg">Showcase your mastery of AI filmmaking.</p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-cine-surface p-8 rounded-3xl border border-white/5 flex flex-col items-center text-center">
+                  <div className="w-20 h-20 bg-accent-lime/10 rounded-full flex items-center justify-center mb-6">
+                    <Award className="w-10 h-10 text-accent-lime" />
+                  </div>
+                  <h3 className="font-bold text-xl mb-2">AI Commercial Specialist</h3>
+                  <p className="text-sm text-cine-textMuted mb-6">Completed on Oct 12, 2024</p>
+                  <button className="px-6 py-3 bg-white/5 border border-white/10 rounded-xl text-sm font-bold hover:bg-white hover:text-cine-black transition-all">
+                    Download PDF
+                  </button>
+                </div>
+                
+                <div className="bg-cine-surface p-8 rounded-3xl border border-white/5 border-dashed flex flex-col items-center justify-center text-center opacity-50">
+                  <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-4">
+                    <Lock className="w-6 h-6 text-cine-textMuted" />
+                  </div>
+                  <p className="text-sm font-medium">Complete "Narrative Storytelling" to unlock</p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </main>
+    </div>
+  );
+};
+const Hero = ({ onCtaClick }: { onCtaClick: () => void }) => {
   return (
     <section className="relative min-h-screen pt-20 flex items-center justify-center overflow-hidden">
       {/* Background Ambience */}
@@ -226,7 +713,10 @@ const Hero = () => {
           transition={{ duration: 0.6, delay: 0.3 }}
           className="flex flex-col sm:flex-row items-center justify-center gap-4"
         >
-          <button className="w-full sm:w-auto px-8 py-4 bg-accent-lime text-cine-black font-bold text-lg rounded-full hover:bg-white hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2 group">
+          <button 
+            onClick={onCtaClick}
+            className="w-full sm:w-auto px-8 py-4 bg-accent-lime text-cine-black font-bold text-lg rounded-full hover:bg-white hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2 group"
+          >
             Start All-Access Free Trial
             <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
           </button>
@@ -379,12 +869,13 @@ interface CourseCardProps {
   variants?: any;
 }
 
-const CourseCard: React.FC<CourseCardProps> = ({ title, category, instructor, duration, image, accentColor = "#2D5BFF", variants }) => {
+const CourseCard: React.FC<CourseCardProps & { onClick?: () => void }> = ({ title, category, instructor, duration, image, accentColor = "#2D5BFF", variants, onClick }) => {
   return (
     <motion.div 
       variants={variants}
       whileHover={{ y: -8 }}
-      className="group relative bg-cine-surface rounded-2xl overflow-hidden border border-white/5 hover:border-white/20 transition-colors duration-300 flex flex-col h-full"
+      onClick={onClick}
+      className="group relative bg-cine-surface rounded-2xl overflow-hidden border border-white/5 hover:border-white/20 transition-colors duration-300 flex flex-col h-full cursor-pointer"
     >
       <div className="relative aspect-[4/3] overflow-hidden">
         <motion.div
@@ -430,7 +921,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ title, category, instructor, du
   );
 };
 
-const CourseGrid = () => {
+const CourseGrid = ({ onCourseClick }: { onCourseClick: () => void }) => {
   const courses = [
     {
       title: "The 30-Second AI Ad Spot",
@@ -499,6 +990,7 @@ const CourseGrid = () => {
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
           href="#" 
+          onClick={(e) => { e.preventDefault(); onCourseClick(); }}
           className="hidden md:flex items-center gap-2 text-accent-lime font-medium hover:text-white transition-colors"
         >
           View all courses <ArrowRight className="w-4 h-4" />
@@ -513,12 +1005,12 @@ const CourseGrid = () => {
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
       >
         {courses.map((course, index) => (
-          <CourseCard key={index} {...course} variants={fadeInUp} />
+          <CourseCard key={index} {...course} variants={fadeInUp} onClick={onCourseClick} />
         ))}
       </motion.div>
       
       <div className="mt-12 md:hidden text-center">
-        <a href="#" className="inline-flex items-center gap-2 text-accent-lime font-medium hover:text-white transition-colors">
+        <a href="#" onClick={(e) => { e.preventDefault(); onCourseClick(); }} className="inline-flex items-center gap-2 text-accent-lime font-medium hover:text-white transition-colors">
           View all courses <ArrowRight className="w-4 h-4" />
         </a>
       </div>
@@ -1003,7 +1495,7 @@ const FAQ = () => {
   );
 };
 
-const CTA = () => {
+const CTA = ({ onCtaClick }: { onCtaClick: () => void }) => {
   return (
     <section className="relative w-full py-32 md:py-48 overflow-hidden flex items-center justify-center">
       {/* Background Image with Parallax/Zoom */}
@@ -1046,7 +1538,10 @@ const CTA = () => {
              variants={fadeInUp}
              className="flex flex-col items-center"
           >
-             <button className="px-12 py-5 bg-accent-lime text-cine-black font-bold text-lg md:text-xl rounded-full hover:bg-white hover:scale-105 transition-all duration-300 shadow-[0_0_50px_rgba(204,255,0,0.25)] flex items-center gap-3">
+             <button 
+               onClick={onCtaClick}
+               className="px-12 py-5 bg-accent-lime text-cine-black font-bold text-lg md:text-xl rounded-full hover:bg-white hover:scale-105 transition-all duration-300 shadow-[0_0_50px_rgba(204,255,0,0.25)] flex items-center gap-3"
+             >
                <Play className="w-5 h-5 fill-current" />
                Start Your AI Filmmaking Journey
              </button>
@@ -1068,7 +1563,7 @@ const CTA = () => {
   );
 };
 
-const Footer = () => {
+const Footer = ({ onNavigate }: { onNavigate: (view: string) => void }) => {
   return (
     <footer className="bg-cine-black border-t border-white/5 pt-20 pb-10 px-6">
       <motion.div 
@@ -1079,7 +1574,7 @@ const Footer = () => {
         className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 mb-16"
       >
         <motion.div variants={fadeInUp} className="col-span-1 md:col-span-1">
-          <div className="flex items-center gap-2 mb-6">
+          <div className="flex items-center gap-2 mb-6 cursor-pointer" onClick={() => onNavigate('landing')}>
             <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
               <Play fill="#0B0B0C" className="w-4 h-4 text-cine-black" />
             </div>
@@ -1097,20 +1592,20 @@ const Footer = () => {
         <motion.div variants={fadeInUp}>
           <h4 className="font-bold text-white mb-6">Courses</h4>
           <ul className="space-y-4 text-sm text-cine-textMuted">
-            <li><a href="#" className="hover:text-accent-lime transition-colors">AI Ads & Commercials</a></li>
-            <li><a href="#" className="hover:text-accent-lime transition-colors">Short-Form Viral Video</a></li>
-            <li><a href="#" className="hover:text-accent-lime transition-colors">Cinematic AI Filmmaking</a></li>
-            <li><a href="#" className="hover:text-accent-lime transition-colors">Automation & Content Systems</a></li>
+            <li><a href="#" onClick={(e) => { e.preventDefault(); onNavigate('courses'); }} className="hover:text-accent-lime transition-colors">AI Ads & Commercials</a></li>
+            <li><a href="#" onClick={(e) => { e.preventDefault(); onNavigate('courses'); }} className="hover:text-accent-lime transition-colors">Short-Form Viral Video</a></li>
+            <li><a href="#" onClick={(e) => { e.preventDefault(); onNavigate('courses'); }} className="hover:text-accent-lime transition-colors">Cinematic AI Filmmaking</a></li>
+            <li><a href="#" onClick={(e) => { e.preventDefault(); onNavigate('courses'); }} className="hover:text-accent-lime transition-colors">Automation & Content Systems</a></li>
           </ul>
         </motion.div>
 
         <motion.div variants={fadeInUp}>
           <h4 className="font-bold text-white mb-6">Company</h4>
           <ul className="space-y-4 text-sm text-cine-textMuted">
-            <li><a href="#" className="hover:text-accent-lime transition-colors">About Us</a></li>
-            <li><a href="#" className="hover:text-accent-lime transition-colors">Student Showcase</a></li>
-            <li><a href="#" className="hover:text-accent-lime transition-colors">Creator Stories</a></li>
-            <li><a href="#" className="hover:text-accent-lime transition-colors">Help Center</a></li>
+            <li><a href="#" onClick={(e) => { e.preventDefault(); onNavigate('about'); }} className="hover:text-accent-lime transition-colors">About Us</a></li>
+            <li><a href="#" onClick={(e) => { e.preventDefault(); onNavigate('showcase'); }} className="hover:text-accent-lime transition-colors">Student Showcase</a></li>
+            <li><a href="#" onClick={(e) => { e.preventDefault(); onNavigate('stories'); }} className="hover:text-accent-lime transition-colors">Creator Stories</a></li>
+            <li><a href="#" onClick={(e) => { e.preventDefault(); onNavigate('help'); }} className="hover:text-accent-lime transition-colors">Help Center</a></li>
           </ul>
         </motion.div>
 
@@ -1133,8 +1628,8 @@ const Footer = () => {
       <div className="max-w-7xl mx-auto border-t border-white/5 pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-cine-textMuted">
         <p>&copy; 2024 CineAI Inc. All rights reserved.</p>
         <div className="flex gap-6">
-          <a href="#" className="hover:text-white">Privacy Policy</a>
-          <a href="#" className="hover:text-white">Terms of Service</a>
+          <a href="#" onClick={(e) => { e.preventDefault(); onNavigate('privacy'); }} className="hover:text-white">Privacy Policy</a>
+          <a href="#" onClick={(e) => { e.preventDefault(); onNavigate('terms'); }} className="hover:text-white">Terms of Service</a>
         </div>
       </div>
     </footer>
@@ -1144,25 +1639,76 @@ const Footer = () => {
 // --- Main App Component ---
 
 const App = () => {
+  const [view, setView] = useState<string>('landing');
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    // Check local storage for session
+    const savedUser = localStorage.getItem('cineai_user');
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));
+      setView('dashboard');
+    }
+  }, []);
+
+  const handleLogin = (userData: User) => {
+    setUser(userData);
+    localStorage.setItem('cineai_user', JSON.stringify(userData));
+    setView('dashboard');
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    localStorage.removeItem('cineai_user');
+    setView('landing');
+  };
+
+  if (view === 'login') {
+    return <LoginPage onLogin={handleLogin} />;
+  }
+
+  if (view === 'dashboard' && user) {
+    return <Dashboard user={user} onLogout={handleLogout} />;
+  }
+
   return (
     <div className="bg-cine-black min-h-screen text-cine-text font-sans selection:bg-accent-lime selection:text-cine-black">
-      <Navbar />
+      <Navbar 
+        onNavigate={setView}
+        currentView={view}
+        user={user}
+        onLogout={handleLogout}
+      />
       <main>
-        <Hero />
-        <ToolsSection />
-        <FilterStrip />
-        <CourseGrid />
-        <LearningPaths />
-        <CertificationSection />
-        <SkillSection />
-        <JourneySection />
-        <CommunitySection />
-        <Testimonials />
-        <TrustSection />
-        <FAQ />
-        <CTA />
+        {view === 'landing' && (
+          <>
+            <Hero onCtaClick={() => setView(user ? 'dashboard' : 'login')} />
+            <ToolsSection />
+            <FilterStrip />
+            <CourseGrid onCourseClick={() => setView(user ? 'dashboard' : 'login')} />
+            <LearningPaths />
+            <CertificationSection />
+            <SkillSection />
+            <JourneySection />
+            <CommunitySection />
+            <Testimonials />
+            <TrustSection />
+            <FAQ />
+            <CTA onCtaClick={() => setView(user ? 'dashboard' : 'login')} />
+          </>
+        )}
+        {view === 'courses' && <CoursesPage onCourseClick={() => setView(user ? 'dashboard' : 'login')} />}
+        {view === 'resources' && <FreeResourcesPage />}
+        {view === 'community' && <CommunityPage onJoinClick={() => setView(user ? 'dashboard' : 'login')} />}
+        {view === 'pricing' && <PricingPage onSubscribeClick={() => setView(user ? 'dashboard' : 'login')} />}
+        {view === 'about' && <AboutPage onJoinClick={() => setView(user ? 'dashboard' : 'login')} />}
+        {view === 'showcase' && <StudentShowcasePage />}
+        {view === 'stories' && <CreatorStoriesPage />}
+        {view === 'help' && <HelpCenterPage />}
+        {view === 'privacy' && <PrivacyPolicyPage />}
+        {view === 'terms' && <TermsOfServicePage />}
       </main>
-      <Footer />
+      <Footer onNavigate={setView} />
     </div>
   );
 };
