@@ -92,7 +92,7 @@ export const StudentShowcasePage = () => {
           transition={{ delay: 0.1 }}
           className="text-cine-textMuted max-w-2xl mx-auto text-lg"
         >
-          Explore the incredible films, commercials, and art created by CineAI students using the workflows taught in our courses.
+          Explore the incredible films, commercials, and art created by CineAI students using the workflows taught in my courses.
         </motion.p>
       </div>
 
@@ -164,7 +164,7 @@ export const StudentShowcasePage = () => {
       >
         <h2 className="font-display font-bold text-3xl mb-6">Want to be featured?</h2>
         <p className="text-cine-textMuted mb-8 max-w-xl mx-auto">
-          We regularly feature outstanding student work in our newsletter and showcase. Join a course, create something amazing, and share it in our Discord.
+          I regularly feature outstanding student work in my newsletter and showcase. Join a course, create something amazing, and share it in my Discord.
         </p>
         <button className="px-8 py-4 bg-white text-cine-black font-bold rounded-full hover:bg-accent-lime transition-colors">
           Submit Your Work

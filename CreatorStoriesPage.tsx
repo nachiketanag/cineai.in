@@ -9,7 +9,7 @@ const STORIES = [
     date: "March 12, 2024",
     readTime: "5 min read",
     image: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=800&auto=format&fit=crop",
-    excerpt: "How James used Midjourney and Runway to pitch and win a $20k campaign for a national beverage brand without shooting a single frame of footage."
+    excerpt: "How James used Midjourney and Runway to pitch and win a ₹20L campaign for a national beverage brand without shooting a single frame of footage."
   },
   {
     title: "Building a 100k Follower TikTok Channel in 30 Days",

@@ -6,7 +6,7 @@ const COURSES = [
   {
     title: "The 30-Second AI Ad Spot",
     category: "Commercials",
-    instructor: "Leo K.",
+    instructor: "Nachiketa Nag",
     duration: "4h 20m",
     image: "https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?q=80&w=800&auto=format&fit=crop",
     accentColor: "#CCFF00",
@@ -16,7 +16,7 @@ const COURSES = [
   {
     title: "Narrative Storytelling with Sora",
     category: "Cinema",
-    instructor: "Elena R.",
+    instructor: "Nachiketa Nag",
     duration: "6h 15m",
     image: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=800&auto=format&fit=crop",
     accentColor: "#2D5BFF",
@@ -26,7 +26,7 @@ const COURSES = [
   {
     title: "The 'Infinite Content' Engine",
     category: "Automation",
-    instructor: "Marcus T.",
+    instructor: "Nachiketa Nag",
     duration: "3h 45m",
     image: "https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=800&auto=format&fit=crop",
     accentColor: "#FF6B6B",
@@ -36,7 +36,7 @@ const COURSES = [
   {
     title: "Runway Gen-3 Masterclass",
     category: "VFX",
-    instructor: "Sarah J.",
+    instructor: "Nachiketa Nag",
     duration: "5h 10m",
     image: "https://images.unsplash.com/photo-1535016120720-40c6874c3b13?q=80&w=800&auto=format&fit=crop",
     accentColor: "#9F55FF",
@@ -46,7 +46,7 @@ const COURSES = [
   {
     title: "AI Sound Design & Scoring",
     category: "Audio",
-    instructor: "David B.",
+    instructor: "Nachiketa Nag",
     duration: "2h 50m",
     image: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?q=80&w=800&auto=format&fit=crop",
     accentColor: "#FFD166",
@@ -56,7 +56,7 @@ const COURSES = [
   {
     title: "Freelance Agency Blueprint",
     category: "Business",
-    instructor: "Jessica L.",
+    instructor: "Nachiketa Nag",
     duration: "4h 00m",
     image: "https://images.unsplash.com/photo-1497215728101-856f4ea42174?q=80&w=800&auto=format&fit=crop",
     accentColor: "#CCFF00",
@@ -66,7 +66,7 @@ const COURSES = [
   {
     title: "Midjourney Cinematic Prompts",
     category: "Pre-production",
-    instructor: "Alex M.",
+    instructor: "Nachiketa Nag",
     duration: "3h 20m",
     image: "https://images.unsplash.com/photo-1682687220063-4742bd7fd538?q=80&w=800&auto=format&fit=crop",
     accentColor: "#FF6B6B",
@@ -76,7 +76,7 @@ const COURSES = [
   {
     title: "AI Character Consistency",
     category: "Animation",
-    instructor: "Chris D.",
+    instructor: "Nachiketa Nag",
     duration: "5h 45m",
     image: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=800&auto=format&fit=crop",
     accentColor: "#9F55FF",
@@ -117,7 +117,7 @@ export const CoursesPage = ({ onCourseClick }: { onCourseClick: () => void }) =>
           transition={{ delay: 0.1 }}
           className="text-cine-textMuted max-w-2xl text-lg"
         >
-          Explore our comprehensive library of courses designed to take you from beginner to booked professional.
+          Explore my comprehensive library of courses designed to take you from beginner to booked professional.
         </motion.p>
       </div>
 

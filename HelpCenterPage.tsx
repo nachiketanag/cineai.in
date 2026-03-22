@@ -73,7 +73,7 @@ export const HelpCenterPage = () => {
           animate={{ opacity: 1, y: 0 }}
           className="font-display font-bold text-4xl md:text-6xl mb-6 leading-tight"
         >
-          How can we <span className="text-cine-textMuted">help?</span>
+          How can I <span className="text-cine-textMuted">help?</span>
         </motion.h1>
         
         <motion.div 
@@ -133,7 +133,7 @@ export const HelpCenterPage = () => {
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2000&auto=format&fit=crop')] opacity-5 mix-blend-overlay" />
         <h2 className="font-display font-bold text-3xl mb-4 relative z-10">Still need help?</h2>
         <p className="text-cine-textMuted max-w-xl mx-auto mb-8 relative z-10 text-lg">
-          Our support team is available Monday through Friday, 9am to 5pm EST. We typically respond within 24 hours.
+          I am available Monday through Friday, 9am to 5pm EST. I typically respond within 24 hours.
         </p>
         <div className="flex flex-col sm:flex-row justify-center gap-4 relative z-10">
           <button className="bg-white text-cine-black px-8 py-4 rounded-full font-bold hover:bg-accent-lime transition-colors text-lg flex items-center justify-center gap-2">

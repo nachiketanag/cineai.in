@@ -31,7 +31,7 @@ const RESOURCES = [
     title: "Notion Production Template",
     type: "Template",
     icon: <LinkIcon className="w-6 h-6" />,
-    desc: "The exact Notion template we use to manage our AI film productions from script to screen.",
+    desc: "The exact Notion template I use to manage my AI film productions from script to screen.",
     image: "https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=800&auto=format&fit=crop",
     color: "from-accent-blue/20"
   },
@@ -92,7 +92,7 @@ export const FreeResourcesPage = () => {
           transition={{ delay: 0.1 }}
           className="text-cine-textMuted max-w-2xl mx-auto text-lg"
         >
-          Download our best guides, templates, and workflows to accelerate your AI filmmaking journey without spending a dime.
+          Download my best guides, templates, and workflows to accelerate your AI filmmaking journey without spending a dime.
         </motion.p>
       </div>
 
@@ -155,7 +155,7 @@ export const FreeResourcesPage = () => {
         <div className="absolute inset-0 bg-gradient-to-br from-accent-lime/5 to-transparent pointer-events-none" />
         <h2 className="font-display font-bold text-3xl mb-4 relative z-10">Want more free resources?</h2>
         <p className="text-cine-textMuted max-w-xl mx-auto mb-8 relative z-10">
-          Join 50,000+ creators getting our best AI filmmaking prompts, workflows, and tool updates delivered every week.
+          Join 50,000+ creators getting my best AI filmmaking prompts, workflows, and tool updates delivered every week.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto relative z-10">
           <input 

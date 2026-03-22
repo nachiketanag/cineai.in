@@ -11,7 +11,7 @@ const FEATURES = [
   },
   {
     title: "Weekly Live Q&A",
-    desc: "Get your questions answered live by industry experts and top creators.",
+    desc: "Get your questions answered live by me.",
     icon: <Video className="w-6 h-6" />,
     color: "text-accent-coral"
   },
@@ -33,7 +33,7 @@ const TESTIMONIALS = [
   {
     name: "Alex Rivera",
     role: "Freelance Director",
-    text: "The community feedback alone is worth 10x the price. I landed my first $5k commercial gig through a connection I made here.",
+    text: "The community feedback alone is worth 10x the price. I landed my first ₹5L commercial gig through a connection I made here.",
     image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200&auto=format&fit=crop"
   },
   {
@@ -173,7 +173,7 @@ export const CommunityPage = ({ onJoinClick }: { onJoinClick: () => void }) => {
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2000&auto=format&fit=crop')] opacity-5 mix-blend-overlay" />
         <h2 className="font-display font-bold text-3xl md:text-5xl mb-6 relative z-10">Ready to level up?</h2>
         <p className="text-cine-textMuted max-w-xl mx-auto mb-8 relative z-10 text-lg">
-          Get instant access to the community, weekly live calls, and our entire library of resources when you join CineAI Pro.
+          Get instant access to the community, weekly live calls, and my entire library of resources when you join CineAI Pro.
         </p>
         <button 
           onClick={onJoinClick}

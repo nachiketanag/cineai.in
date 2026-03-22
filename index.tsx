@@ -42,6 +42,7 @@ import { CreatorStoriesPage } from './CreatorStoriesPage';
 import { HelpCenterPage } from './HelpCenterPage';
 import { PrivacyPolicyPage } from './PrivacyPolicyPage';
 import { TermsOfServicePage } from './TermsOfServicePage';
+import { supabase } from './supabase';
 
 // --- Animation Variants ---
 
@@ -222,22 +223,41 @@ const Navbar = ({ onNavigate, currentView, user, onLogout }: { onNavigate: (view
 
 // --- Auth & Dashboard Components ---
 
-const LoginPage = ({ onLogin }: { onLogin: (user: User) => void }) => {
+const LoginPage = ({ onLogin, onNavigate }: { onLogin: (user: User) => void, onNavigate: (view: string) => void }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email === DUMMY_USER.email && password === DUMMY_USER.password) {
-      onLogin(DUMMY_USER);
-    } else {
-      setError('Invalid credentials. Use test@cineai.in / password123');
+    setLoading(true);
+    setError('');
+    
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      setError(error.message);
+      setLoading(false);
+    } else if (data.user) {
+      // The onAuthStateChange listener in App will handle the login
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+    });
+    if (error) {
+      setError(error.message);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-6 bg-cine-black">
+    <div className="min-h-screen flex items-center justify-center px-6 bg-cine-black py-12">
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -279,15 +299,177 @@ const LoginPage = ({ onLogin }: { onLogin: (user: User) => void }) => {
 
           <button 
             type="submit"
-            className="w-full py-4 bg-accent-lime text-cine-black font-bold rounded-xl hover:bg-white transition-colors shadow-lg shadow-accent-lime/10"
+            disabled={loading}
+            className="w-full py-4 bg-accent-lime text-cine-black font-bold rounded-xl hover:bg-white transition-colors shadow-lg shadow-accent-lime/10 disabled:opacity-50"
           >
-            Sign In
+            {loading ? 'Signing In...' : 'Sign In'}
           </button>
         </form>
 
+        <div className="mt-6 flex items-center justify-center space-x-4">
+          <div className="h-px bg-white/10 flex-1"></div>
+          <span className="text-xs text-cine-textMuted uppercase tracking-wider">Or continue with</span>
+          <div className="h-px bg-white/10 flex-1"></div>
+        </div>
+
+        <button 
+          onClick={handleGoogleLogin}
+          className="mt-6 w-full py-3 bg-white text-cine-black font-bold rounded-xl hover:bg-gray-100 transition-colors flex items-center justify-center gap-3"
+        >
+          <svg className="w-5 h-5" viewBox="0 0 24 24">
+            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+          </svg>
+          Sign in with Google
+        </button>
+
         <div className="mt-8 pt-6 border-t border-white/5 text-center">
           <p className="text-xs text-cine-textMuted">
-            Don't have an account? <a href="#" className="text-accent-lime font-bold">Join the Academy</a>
+            Don't have an account? <button onClick={() => onNavigate('register')} className="text-accent-lime font-bold hover:underline">Join the Academy</button>
+          </p>
+        </div>
+      </motion.div>
+    </div>
+  );
+};
+
+const RegisterPage = ({ onRegister, onNavigate }: { onRegister: (user: User) => void, onNavigate: (view: string) => void }) => {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [mobile, setMobile] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: name,
+          mobile: mobile,
+        }
+      }
+    });
+
+    if (error) {
+      setError(error.message);
+      setLoading(false);
+    } else if (data.user) {
+      // The onAuthStateChange listener in App will handle the login
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+    });
+    if (error) {
+      setError(error.message);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center px-6 bg-cine-black py-12">
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="w-full max-w-md bg-cine-surface p-8 rounded-3xl border border-white/10 shadow-2xl"
+      >
+        <div className="text-center mb-8">
+          <div className="w-12 h-12 bg-accent-lime rounded-xl flex items-center justify-center mx-auto mb-4">
+            <Users className="w-6 h-6 text-cine-black" />
+          </div>
+          <h2 className="font-display font-bold text-3xl mb-2">Create Account</h2>
+          <p className="text-cine-textMuted text-sm">Join the Academy and start your journey</p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-cine-textMuted mb-2">Full Name</label>
+            <input 
+              type="text" 
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="John Doe"
+              className="w-full bg-cine-black border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-accent-lime transition-colors"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-cine-textMuted mb-2">Email Address</label>
+            <input 
+              type="email" 
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="test@cineai.in"
+              className="w-full bg-cine-black border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-accent-lime transition-colors"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-cine-textMuted mb-2">Mobile Number</label>
+            <input 
+              type="tel" 
+              value={mobile}
+              onChange={(e) => setMobile(e.target.value)}
+              placeholder="+91 98765 43210"
+              className="w-full bg-cine-black border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-accent-lime transition-colors"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-cine-textMuted mb-2">Password</label>
+            <input 
+              type="password" 
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              className="w-full bg-cine-black border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-accent-lime transition-colors"
+              required
+            />
+          </div>
+
+          {error && <p className="text-accent-coral text-xs font-medium">{error}</p>}
+
+          <button 
+            type="submit"
+            disabled={loading}
+            className="w-full py-4 bg-accent-lime text-cine-black font-bold rounded-xl hover:bg-white transition-colors shadow-lg shadow-accent-lime/10 disabled:opacity-50"
+          >
+            {loading ? 'Creating Account...' : 'Create Account'}
+          </button>
+        </form>
+
+        <div className="mt-6 flex items-center justify-center space-x-4">
+          <div className="h-px bg-white/10 flex-1"></div>
+          <span className="text-xs text-cine-textMuted uppercase tracking-wider">Or continue with</span>
+          <div className="h-px bg-white/10 flex-1"></div>
+        </div>
+
+        <button 
+          onClick={handleGoogleLogin}
+          className="mt-6 w-full py-3 bg-white text-cine-black font-bold rounded-xl hover:bg-gray-100 transition-colors flex items-center justify-center gap-3"
+        >
+          <svg className="w-5 h-5" viewBox="0 0 24 24">
+            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+          </svg>
+          Sign up with Google
+        </button>
+
+        <div className="mt-8 pt-6 border-t border-white/5 text-center">
+          <p className="text-xs text-cine-textMuted">
+            Already have an account? <button onClick={() => onNavigate('login')} className="text-accent-lime font-bold hover:underline">Log in</button>
           </p>
         </div>
       </motion.div>
@@ -456,10 +638,11 @@ const Dashboard = ({ user, onLogout }: { user: User, onLogout: () => void }) => 
                   </p>
                   
                   <div className="flex items-center gap-6 p-6 bg-cine-surface rounded-2xl border border-white/5">
-                    <img src="https://randomuser.me/api/portraits/men/44.jpg" className="w-12 h-12 rounded-full" alt="Instructor" />
+                    <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=400&auto=format&fit=crop" className="w-12 h-12 rounded-full object-cover" alt="Instructor" />
                     <div>
-                      <p className="text-xs text-cine-textMuted uppercase font-bold tracking-widest">Instructor</p>
+                      <p className="text-xs text-cine-textMuted uppercase font-bold tracking-widest">Your Instructor</p>
                       <p className="font-bold text-lg">{activeCourse.instructor}</p>
+                      <p className="text-sm text-cine-textMuted mt-1">Alumni of IIT ISM Dhanbad, AI Video Ads | Performance Creative | Generative AI for Brands expert.</p>
                     </div>
                   </div>
                 </div>
@@ -926,7 +1109,7 @@ const CourseGrid = ({ onCourseClick }: { onCourseClick: () => void }) => {
     {
       title: "The 30-Second AI Ad Spot",
       category: "Commercials",
-      instructor: "Leo K.",
+      instructor: "Nachiketa Nag",
       duration: "4h 20m",
       image: "https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?q=80&w=800&auto=format&fit=crop",
       accentColor: "#CCFF00"
@@ -934,7 +1117,7 @@ const CourseGrid = ({ onCourseClick }: { onCourseClick: () => void }) => {
     {
       title: "Narrative Storytelling with Sora",
       category: "Cinema",
-      instructor: "Elena R.",
+      instructor: "Nachiketa Nag",
       duration: "6h 15m",
       image: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=800&auto=format&fit=crop",
       accentColor: "#2D5BFF"
@@ -942,7 +1125,7 @@ const CourseGrid = ({ onCourseClick }: { onCourseClick: () => void }) => {
     {
       title: "The 'Infinite Content' Engine",
       category: "Automation",
-      instructor: "Marcus T.",
+      instructor: "Nachiketa Nag",
       duration: "3h 45m",
       image: "https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=800&auto=format&fit=crop",
       accentColor: "#FF6B6B"
@@ -950,7 +1133,7 @@ const CourseGrid = ({ onCourseClick }: { onCourseClick: () => void }) => {
     {
       title: "Runway Gen-3 Masterclass",
       category: "VFX",
-      instructor: "Sarah J.",
+      instructor: "Nachiketa Nag",
       duration: "5h 10m",
       image: "https://images.unsplash.com/photo-1535016120720-40c6874c3b13?q=80&w=800&auto=format&fit=crop",
       accentColor: "#9F55FF"
@@ -958,7 +1141,7 @@ const CourseGrid = ({ onCourseClick }: { onCourseClick: () => void }) => {
     {
       title: "AI Sound Design & Scoring",
       category: "Audio",
-      instructor: "David B.",
+      instructor: "Nachiketa Nag",
       duration: "2h 50m",
       image: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?q=80&w=800&auto=format&fit=crop",
       accentColor: "#FFD166"
@@ -966,7 +1149,7 @@ const CourseGrid = ({ onCourseClick }: { onCourseClick: () => void }) => {
     {
       title: "Freelance Agency Blueprint",
       category: "Business",
-      instructor: "Jessica L.",
+      instructor: "Nachiketa Nag",
       duration: "4h 00m",
       image: "https://images.unsplash.com/photo-1497215728101-856f4ea42174?q=80&w=800&auto=format&fit=crop",
       accentColor: "#CCFF00"
@@ -1248,7 +1431,7 @@ const JourneySection = () => {
           </motion.div>
           <motion.h2 variants={fadeInUp} className="font-display font-bold text-4xl md:text-6xl mb-6">From Prompt to Premiere.</motion.h2>
           <motion.p variants={fadeInUp} className="text-xl text-cine-textMuted mb-10 max-w-2xl mx-auto">
-            Join 15,000+ creators bridging the gap between imagination and reality. We teach the workflows that agencies are charging $10k+ for.
+            Join 15,000+ creators bridging the gap between imagination and reality. I teach the workflows that agencies are charging ₹10L+ for.
           </motion.p>
           <motion.button variants={fadeInUp} className="px-8 py-4 bg-white text-cine-black font-bold text-lg rounded-full hover:bg-accent-lime transition-colors">
             View Student Showcase
@@ -1279,7 +1462,7 @@ const CommunitySection = () => {
              And Never Learn Alone
            </motion.h2>
            <motion.p variants={fadeInUp} className="text-lg text-cine-textMuted mb-8 leading-relaxed">
-             Filmmaking is collaborative. Get instant feedback on your prompts, share your latest renders, and collaborate with peers in our exclusive Discord server.
+             Filmmaking is collaborative. Get instant feedback on your prompts, share your latest renders, and collaborate with peers in my exclusive Discord server.
            </motion.p>
            
            <motion.div variants={staggerContainer} className="space-y-4">
@@ -1287,7 +1470,7 @@ const CommunitySection = () => {
                 <MessageCircle className="w-6 h-6 text-accent-lime" />
                 <div>
                   <h4 className="font-bold text-white">24/7 Prompt Support</h4>
-                  <p className="text-sm text-cine-textMuted">Stuck? Our experts help debug your workflows.</p>
+                  <p className="text-sm text-cine-textMuted">Stuck? I will help debug your workflows.</p>
                 </div>
              </motion.div>
              <motion.div variants={fadeInUp} className="flex items-center gap-4 p-4 rounded-xl bg-cine-black/50 border border-white/5">
@@ -1331,61 +1514,123 @@ const CommunitySection = () => {
 };
 
 const Testimonials = () => {
+  const testimonials = [
+    {
+      quote: "Before CineAI, I had zero editing skills. Now I create real estate videos in 2 minutes and get leads every week.",
+      author: "Rahul Sharma",
+      location: "Delhi",
+      avatar: "https://randomuser.me/api/portraits/men/32.jpg"
+    },
+    {
+      quote: "I started as a beginner. CineAI’s prompts and tools made me confident to start freelancing within 15 days.",
+      author: "Priya Verma",
+      location: "Lucknow",
+      avatar: "https://randomuser.me/api/portraits/women/44.jpg"
+    },
+    {
+      quote: "As a photographer, CineAI helped me add AI videos to my services. My income literally doubled.",
+      author: "Arjun Patel",
+      location: "Ahmedabad",
+      avatar: "https://randomuser.me/api/portraits/men/45.jpg"
+    },
+    {
+      quote: "AI filmmaking felt complicated, but CineAI made it super simple. The step-by-step system is gold.",
+      author: "Sneha Das",
+      location: "Kolkata",
+      avatar: "https://randomuser.me/api/portraits/women/68.jpg"
+    },
+    {
+      quote: "I used CineAI to create property ads — got 20+ leads from one reel. This is insane.",
+      author: "Mohit Gupta",
+      location: "Noida",
+      avatar: "https://randomuser.me/api/portraits/men/22.jpg"
+    },
+    {
+      quote: "The prompt packs alone are worth it. I use them daily for content creation.",
+      author: "Neha Singh",
+      location: "Patna",
+      avatar: "https://randomuser.me/api/portraits/women/33.jpg"
+    },
+    {
+      quote: "I don’t even have a high-end laptop. Still making AI videos using CineAI tools.",
+      author: "Rakesh Yadav",
+      location: "Jaipur",
+      avatar: "https://randomuser.me/api/portraits/men/55.jpg"
+    },
+    {
+      quote: "CineAI helped me build a personal brand on Instagram using AI reels.",
+      author: "Aditi Mehta",
+      location: "Mumbai",
+      avatar: "https://randomuser.me/api/portraits/women/21.jpg"
+    },
+    {
+      quote: "I now offer AI video services to clients. Closed my first ₹25,000 deal after learning from CineAI.",
+      author: "Imran Khan",
+      location: "Hyderabad",
+      avatar: "https://randomuser.me/api/portraits/men/66.jpg"
+    },
+    {
+      quote: "Best investment I made this year. CineAI is not just a course — it’s a system.",
+      author: "Souvik Roy",
+      location: "Kolkata",
+      avatar: "https://randomuser.me/api/portraits/men/77.jpg"
+    }
+  ];
+
   return (
-    <section className="py-24 px-6 max-w-7xl mx-auto border-b border-white/5">
-      <motion.h2 
+    <section className="py-24 overflow-hidden border-b border-white/5 bg-cine-black">
+      <div className="max-w-7xl mx-auto px-6 mb-16 text-center">
+        <motion.h2 
+          initial="hidden" 
+          whileInView="visible" 
+          viewport={{ once: true }} 
+          variants={fadeInUp} 
+          className="font-display font-bold text-3xl md:text-5xl mb-4"
+        >
+          Real People. Real Results.
+        </motion.h2>
+      </div>
+      
+      <div className="relative flex overflow-x-hidden group pb-12">
+        {/* Gradient masks for smooth fade on edges */}
+        <div className="absolute inset-y-0 left-0 w-1/6 bg-gradient-to-r from-cine-black to-transparent z-10 pointer-events-none"></div>
+        <div className="absolute inset-y-0 right-0 w-1/6 bg-gradient-to-l from-cine-black to-transparent z-10 pointer-events-none"></div>
+        
+        <motion.div 
+          className="flex gap-6 whitespace-nowrap px-3"
+          animate={{ x: ["0%", "-50%"] }}
+          transition={{ repeat: Infinity, ease: "linear", duration: 40 }}
+        >
+          {[...testimonials, ...testimonials].map((item, i) => (
+            <div key={i} className="w-[350px] flex-shrink-0 bg-cine-surface p-8 rounded-2xl border border-white/5 relative whitespace-normal flex flex-col">
+              <div className="flex gap-1 mb-4">
+                {[...Array(5)].map((_, idx) => (
+                  <Star key={idx} className="w-4 h-4 text-accent-lime fill-current" />
+                ))}
+              </div>
+              <p className="text-lg text-gray-300 mb-8 leading-relaxed flex-grow">"{item.quote}"</p>
+              <div className="flex items-center gap-4 mt-auto">
+                <img src={item.avatar} alt={item.author} className="w-12 h-12 rounded-full border border-white/10 object-cover" />
+                <div>
+                  <h4 className="font-bold text-white">{item.author}</h4>
+                  <p className="text-sm text-cine-textMuted">{item.location}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </motion.div>
+      </div>
+
+      <motion.div 
         initial="hidden" 
         whileInView="visible" 
         viewport={{ once: true }} 
         variants={fadeInUp} 
-        className="font-display font-bold text-3xl md:text-4xl mb-16 text-center"
+        className="text-center mt-8"
       >
-        Success Stories
-      </motion.h2>
-      
-      <motion.div 
-        variants={staggerContainer}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-        className="grid grid-cols-1 md:grid-cols-3 gap-6"
-      >
-        {[
-          {
-            quote: "I went from manual editing to shipping 5x the video volume in a week. CineAI isn't just a course, it's an operating system.",
-            author: "Sarah Jenkins",
-            role: "Creative Director",
-            avatar: "https://randomuser.me/api/portraits/women/44.jpg"
-          },
-          {
-            quote: "The automation module alone saved my agency 20 hours a week. The ROI on this membership is insane.",
-            author: "Marcus Chen",
-            role: "Agency Owner",
-            avatar: "https://randomuser.me/api/portraits/men/32.jpg"
-          },
-          {
-            quote: "Finally, a place that teaches the 'why' and 'how' of AI art, not just the tools. My films look cinematic for the first time.",
-            author: "Elara V.",
-            role: "Indie Filmmaker",
-            avatar: "https://randomuser.me/api/portraits/women/65.jpg"
-          }
-        ].map((item, i) => (
-          <motion.div key={i} variants={fadeInUp} className="bg-cine-surface p-8 rounded-2xl border border-white/5 relative">
-            <div className="absolute -top-3 -left-3">
-              <div className="bg-cine-black p-2 rounded-full border border-white/10">
-                 <Star className="w-4 h-4 text-accent-lime fill-current" />
-              </div>
-            </div>
-            <p className="text-lg text-gray-300 mb-6 leading-relaxed">"{item.quote}"</p>
-            <div className="flex items-center gap-3">
-              <img src={item.avatar} alt={item.author} className="w-10 h-10 rounded-full border border-white/10" />
-              <div>
-                <h4 className="font-bold text-sm text-white">{item.author}</h4>
-                <p className="text-xs text-cine-textMuted">{item.role}</p>
-              </div>
-            </div>
-          </motion.div>
-        ))}
+        <button className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-accent-lime text-cine-black font-bold text-lg rounded-full hover:bg-white hover:scale-105 transition-all duration-300">
+          👉 Join 1000+ creators using CineAI
+        </button>
       </motion.div>
     </section>
   );
@@ -1441,10 +1686,10 @@ const TrustSection = () => {
 const FAQ = () => {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
   const faqs = [
-    { q: "Do I need a powerful computer?", a: "No. Most tools we teach (Midjourney, Runway, Sora) are cloud-based. You can run them on a standard laptop or even a tablet." },
-    { q: "Are the AI tools included in the price?", a: "The academy subscription covers the training. You will need your own subscriptions to tools like Midjourney (~$10/mo) or Runway, though we teach free alternatives where possible." },
-    { q: "Is this suitable for complete beginners?", a: "Absolutely. We have a 'Zero to Hero' track specifically designed for people who have never written a prompt before." },
-    { q: "Can I cancel anytime?", a: "Yes, our monthly membership is flexible. Cancel with one click from your dashboard." }
+    { q: "Do I need a powerful computer?", a: "No. Most tools I teach (Midjourney, Runway, Sora) are cloud-based. You can run them on a standard laptop or even a tablet." },
+    { q: "Are the AI tools included in the price?", a: "The academy subscription covers the training. You will need your own subscriptions to tools like Midjourney (~₹1,000/mo) or Runway, though I teach free alternatives where possible." },
+    { q: "Is this suitable for complete beginners?", a: "Absolutely. I have a 'Zero to Hero' track specifically designed for people who have never written a prompt before." },
+    { q: "Can I cancel anytime?", a: "Yes, my monthly membership is flexible. Cancel with one click from your dashboard." }
   ];
 
   return (
@@ -1564,6 +1809,9 @@ const CTA = ({ onCtaClick }: { onCtaClick: () => void }) => {
 };
 
 const Footer = ({ onNavigate }: { onNavigate: (view: string) => void }) => {
+  const startYear = 2024;
+  const currentYear = new Date().getFullYear();
+
   return (
     <footer className="bg-cine-black border-t border-white/5 pt-20 pb-10 px-6">
       <motion.div 
@@ -1626,7 +1874,7 @@ const Footer = ({ onNavigate }: { onNavigate: (view: string) => void }) => {
       </motion.div>
 
       <div className="max-w-7xl mx-auto border-t border-white/5 pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-cine-textMuted">
-        <p>&copy; 2024 CineAI Inc. All rights reserved.</p>
+        <p>&copy; {startYear === currentYear ? startYear : `${startYear}–${currentYear}`} CineAI Labs. All rights reserved.</p>
         <div className="flex gap-6">
           <a href="#" onClick={(e) => { e.preventDefault(); onNavigate('privacy'); }} className="hover:text-white">Privacy Policy</a>
           <a href="#" onClick={(e) => { e.preventDefault(); onNavigate('terms'); }} className="hover:text-white">Terms of Service</a>
@@ -1643,28 +1891,61 @@ const App = () => {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    // Check local storage for session
-    const savedUser = localStorage.getItem('cineai_user');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-      setView('dashboard');
-    }
-  }, []);
+    // Check active session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        const userData: User = {
+          id: session.user.id,
+          name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'User',
+          email: session.user.email || '',
+          enrolledCourses: session.user.user_metadata?.enrolledCourses || DUMMY_USER.enrolledCourses,
+          completedModules: session.user.user_metadata?.completedModules || DUMMY_USER.completedModules,
+        };
+        setUser(userData);
+        if (view === 'login' || view === 'register') {
+          setView('dashboard');
+        }
+      }
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        const userData: User = {
+          id: session.user.id,
+          name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'User',
+          email: session.user.email || '',
+          enrolledCourses: session.user.user_metadata?.enrolledCourses || DUMMY_USER.enrolledCourses,
+          completedModules: session.user.user_metadata?.completedModules || DUMMY_USER.completedModules,
+        };
+        setUser(userData);
+        if (view === 'login' || view === 'register') {
+          setView('dashboard');
+        }
+      } else {
+        setUser(null);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [view]);
 
   const handleLogin = (userData: User) => {
-    setUser(userData);
-    localStorage.setItem('cineai_user', JSON.stringify(userData));
-    setView('dashboard');
+    // Legacy handler, now managed by onAuthStateChange
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     setUser(null);
-    localStorage.removeItem('cineai_user');
     setView('landing');
   };
 
   if (view === 'login') {
-    return <LoginPage onLogin={handleLogin} />;
+    return <LoginPage onLogin={handleLogin} onNavigate={setView} />;
+  }
+
+  if (view === 'register') {
+    return <RegisterPage onRegister={handleLogin} onNavigate={setView} />;
   }
 
   if (view === 'dashboard' && user) {
